@@ -12,10 +12,10 @@ This package needs GoTK3 (GTK) to run (see link below).
 gtk.Init(&os.Args)
 
 // Super simple dialog
-dialog.Title("Hello World!").OkButton()
+dialog.Title("Hello World!").OkButton().Show()
 
 // Normal dialog
-dialog.Title("Hello World!").Text("How are you today?").OkButton()
+dialog.Title("Hello World!").Text("How are you today?").OkButton().Show()
 
 // Question dialog
 response := dialog.Title("Hello World!").
