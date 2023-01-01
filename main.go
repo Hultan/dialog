@@ -1,18 +1,54 @@
 package dialog
 
 import (
+	_ "embed"
 	"fmt"
 
+	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
 )
 
-// iconPaths holds information about what iconType corresponds to what icon path
-var iconPaths = map[iconType]string{
-	iconInformation: iconInformationFilename,
-	iconWarning:     iconWarningFilename,
-	iconQuestion:    iconQuestionFilename,
-	iconError:       iconErrorFilename,
+// Dialog contains information about the dialog the user wants
+type Dialog struct {
+	title, text, extra string
+	textMarkup         string
+	width, height      int
+	icon               iconType
+	buttons            buttonsType
 }
+
+// iconType describes what type of icon the user wants
+type iconType int
+
+const (
+	iconNone iconType = iota
+	iconInformation
+	iconWarning
+	iconQuestion
+	iconError
+)
+
+// buttonsType describes the number of different buttons the user wants
+type buttonsType int
+
+const (
+	buttonsOk buttonsType = iota
+	buttonsOkCancel
+	buttonsYesNo
+	buttonsYesNoCancel
+)
+
+//go:embed error.png
+var errorIcon []byte
+
+//go:embed warning.png
+var warningIcon []byte
+
+//go:embed info.png
+var infoIcon []byte
+
+//go:embed question.png
+var questionIcon []byte
 
 // gtkButtons holds information about what buttonsType corresponds to which gtk buttons
 var gtkButtons = map[buttonsType][][]interface{}{
@@ -26,14 +62,10 @@ var gtkButtons = map[buttonsType][][]interface{}{
 // Public methods
 //
 
-// Title is the starting method, since every dialog needs a title.
+// Title is the starting method (constructor), since every dialog needs a title.
 func Title(title string) *Dialog {
 	return &Dialog{title: title}
 }
-
-//
-// Dialog information & size
-//
 
 // Text sets the main text in the dialog.
 func (d *Dialog) Text(text string) *Dialog {
@@ -72,10 +104,6 @@ func (d *Dialog) Height(height int) *Dialog {
 	return d
 }
 
-//
-// Icons
-//
-
 // InfoIcon adds an information icon to the dialog
 func (d *Dialog) InfoIcon() *Dialog {
 	d.icon = iconInformation
@@ -100,10 +128,6 @@ func (d *Dialog) ErrorIcon() *Dialog {
 	return d
 }
 
-//
-// Buttons
-//
-
 // OkButton adds an ok button to the dialog
 func (d *Dialog) OkButton() *Dialog {
 	d.buttons = buttonsOk
@@ -127,10 +151,6 @@ func (d *Dialog) YesNoCancelButtons() *Dialog {
 	d.buttons = buttonsYesNoCancel
 	return d
 }
-
-//
-// Show
-//
 
 // Show will display the dialog
 func (d *Dialog) Show() gtk.ResponseType {
@@ -165,7 +185,7 @@ func (d *Dialog) createDialog() (*gtk.Dialog, error) {
 	content.Add(imageBox)
 
 	if d.icon != iconNone {
-		image, err := gtk.ImageNewFromFile(iconPaths[d.icon])
+		image, err := createImage(d.icon)
 		handleError(err)
 
 		imageBox.Add(image)
@@ -206,6 +226,31 @@ func (d *Dialog) createDialog() (*gtk.Dialog, error) {
 	dialog.SetSizeRequest(d.width, d.height)
 	dialog.ShowAll()
 	return dialog, nil
+}
+
+func createImage(icon iconType) (*gtk.Image, error) {
+	var pic *gdk.Pixbuf
+	var img *gtk.Image
+	var err error
+
+	switch icon {
+	case iconError:
+		pic, err = gdk.PixbufNewFromBytesOnly(errorIcon)
+	case iconInformation:
+		pic, err = gdk.PixbufNewFromBytesOnly(infoIcon)
+	case iconQuestion:
+		pic, err = gdk.PixbufNewFromBytesOnly(questionIcon)
+	case iconWarning:
+		pic, err = gdk.PixbufNewFromBytesOnly(warningIcon)
+	}
+	if err != nil {
+		return nil, err
+	}
+	img, err = gtk.ImageNewFromPixbuf(pic)
+	if err != nil {
+		return nil, err
+	}
+	return img, err
 }
 
 func (d *Dialog) showDialog(dialog *gtk.Dialog) gtk.ResponseType {

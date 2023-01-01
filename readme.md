@@ -2,11 +2,9 @@
 
 A simple message dialog package. 
 
-I don't recommend using this package, use **sqweeks** package instead (see links below). I am confident that my package contains lots of bugs.
-
 ### Usage:
 
-This package needs GoTK3 (GTK) to run (see link below). 
+This package needs GoTK3 (GTK) to run (see link below), and you will need to run gtk.Init() somewhere in your application, before using the dialogs. 
 ```go
 // Initialize gtk
 gtk.Init(&os.Args)
@@ -45,6 +43,8 @@ if response == gtk.RESPONSE_YES {
 }
 ```
 # LINKS
-* https://github.com/sqweek/dialog
-* https://github.com/gotk3/gotk3
+* Source of inspiration: https://github.com/sqweek/dialog
+* GoTK3 : https://github.com/gotk3/gotk3
 # TODO
+* Choose between smaller and larger icons
+

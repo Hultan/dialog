@@ -1,17 +1,12 @@
 package main
 
 import (
+	_ "embed"
 	"os"
 
-	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
 
-	"github.com/hultan/dialog/pkg/dialog"
-)
-
-const (
-	ApplicationId    = "se.softteam.softimdb"
-	ApplicationFlags = glib.APPLICATION_FLAGS_NONE
+	"github.com/hultan/dialog"
 )
 
 func main() {
