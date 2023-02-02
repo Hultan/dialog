@@ -15,14 +15,14 @@ func main() {
 
 	dialog.Title("Hello World!").OkButton()
 	dialog.Title("Hello World!").Text("How are you today?").OkButton()
-	dialog.Title("Hello World!").
+	_, _ = dialog.Title("Hello World!").
 		TextMarkup("How are you <i><b>today</b></i>?").
 		InfoIcon().
 		OkButton().
 		Size(300, 150).
 		Show()
 
-	response := dialog.Title("Hello World!").
+	response, _ := dialog.Title("Hello World!").
 		Text("How are you today?").
 		Extra(getLongText()).
 		QuestionIcon().
@@ -31,14 +31,14 @@ func main() {
 		Show()
 
 	if response == gtk.RESPONSE_YES {
-		dialog.Title("Your response...").
+		_, _ = dialog.Title("Your response...").
 			Text("...was affirmative!").
 			WarningIcon().
 			OkButton().
 			Width(400).
 			Show()
 	} else {
-		dialog.Title("Your response...").
+		_, _ = dialog.Title("Your response...").
 			Text("...was very negative!").
 			ErrorIcon().
 			OkButton().

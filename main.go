@@ -2,10 +2,10 @@ package dialog
 
 import (
 	_ "embed"
-	"fmt"
 
 	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
+	"github.com/gotk3/gotk3/pango"
 )
 
 // Dialog contains information about the dialog the user wants
@@ -64,7 +64,7 @@ var gtkButtons = map[buttonsType][][]interface{}{
 
 // Title is the starting method (constructor), since every dialog needs a title.
 func Title(title string) *Dialog {
-	return &Dialog{title: title}
+	return &Dialog{title: title, width: 300}
 }
 
 // Text sets the main text in the dialog.
@@ -153,7 +153,7 @@ func (d *Dialog) YesNoCancelButtons() *Dialog {
 }
 
 // Show will display the dialog
-func (d *Dialog) Show() gtk.ResponseType {
+func (d *Dialog) Show() (gtk.ResponseType, error) {
 	return d.createAndShowDialog()
 }
 
@@ -161,22 +161,30 @@ func (d *Dialog) Show() gtk.ResponseType {
 // Private methods
 //
 
-func (d *Dialog) createAndShowDialog() gtk.ResponseType {
+func (d *Dialog) createAndShowDialog() (gtk.ResponseType, error) {
 	dialog, err := d.createDialog()
-	handleError(err)
+	if err != nil {
+		return gtk.RESPONSE_NONE, err
+	}
 
-	return d.showDialog(dialog)
+	return d.showDialog(dialog), err
 }
 
 func (d *Dialog) createDialog() (*gtk.Dialog, error) {
 	dialog, err := gtk.DialogNewWithButtons(d.title, nil, gtk.DIALOG_MODAL, gtkButtons[d.buttons]...)
-	handleError(err)
+	if err != nil {
+		return nil, err
+	}
 
 	content, err := dialog.GetContentArea()
-	handleError(err)
+	if err != nil {
+		return nil, err
+	}
 
 	imageBox, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 10)
-	handleError(err)
+	if err != nil {
+		return nil, err
+	}
 
 	imageBox.SetMarginTop(20)
 	imageBox.SetMarginBottom(10)
@@ -186,7 +194,9 @@ func (d *Dialog) createDialog() (*gtk.Dialog, error) {
 
 	if d.icon != iconNone {
 		image, err := createImage(d.icon)
-		handleError(err)
+		if err != nil {
+			return nil, err
+		}
 
 		imageBox.Add(image)
 	}
@@ -195,23 +205,33 @@ func (d *Dialog) createDialog() (*gtk.Dialog, error) {
 		label, err := gtk.LabelNew("")
 		label.SetMarkup(d.textMarkup)
 		label.SetUseMarkup(true)
-		handleError(err)
+		label.SetLineWrapMode(pango.WRAP_WORD)
+		if err != nil {
+			return nil, err
+		}
 
 		imageBox.Add(label)
 	} else if d.text != "" {
 		label, err := gtk.LabelNew(d.text)
-		handleError(err)
+		label.SetLineWrapMode(pango.WRAP_WORD)
+		if err != nil {
+			return nil, err
+		}
 
 		imageBox.Add(label)
 	}
 
 	if d.extra != "" {
 		scroll, err := gtk.ScrolledWindowNew(nil, nil)
-		handleError(err)
+		if err != nil {
+			return nil, err
+		}
 		content.PackEnd(scroll, true, true, 20)
 
 		buffer, err := gtk.TextBufferNew(nil)
-		handleError(err)
+		if err != nil {
+			return nil, err
+		}
 
 		buffer.SetText(d.extra)
 		extraTextView, err := gtk.TextViewNewWithBuffer(buffer)
@@ -257,10 +277,4 @@ func (d *Dialog) showDialog(dialog *gtk.Dialog) gtk.ResponseType {
 	response := dialog.Run()
 	dialog.Destroy()
 	return response
-}
-
-func handleError(err error) {
-	if err != nil {
-		fmt.Println(err)
-	}
 }
