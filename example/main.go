@@ -13,46 +13,47 @@ func main() {
 	// Initialize gtk
 	gtk.Init(&os.Args)
 
-	response, _ := dialog.Title("A custom icon!").
+	_, _ = dialog.Title("A custom icon!").
 		Text("This is a custom icon, really?").
 		Extra(getLongText()).
-		CustomIcon("/home/per/code/dialog/examples/assets/armour.png").
+		ExtraHeight(200).
+		CustomIcon("/home/per/code/dialog/example/assets/armour.png").
 		OkButton().
-		Height(400).
+		Size(300, 100).
 		Show()
-
-	dialog.Title("Hello World!").OkButton()
-	dialog.Title("Hello World!").Text("How are you today?").OkButton()
-	_, _ = dialog.Title("Hello World!").
-		TextMarkup("How are you <i><b>today</b></i>?").
-		InfoIcon().
-		OkButton().
-		Size(300, 150).
-		Show()
-
-	response, _ = dialog.Title("Hello World!").
-		Text("How are you today?").
-		Extra(getLongText()).
-		QuestionIcon().
-		YesNoButtons().
-		Height(400).
-		Show()
-
-	if response == gtk.RESPONSE_YES {
-		_, _ = dialog.Title("Your response...").
-			Text("...was affirmative!").
-			WarningIcon().
-			OkButton().
-			Width(400).
-			Show()
-	} else {
-		_, _ = dialog.Title("Your response...").
-			Text("...was very negative!").
-			ErrorIcon().
-			OkButton().
-			Width(400).
-			Show()
-	}
+	//
+	//dialog.Title("Hello World!").OkButton()
+	//dialog.Title("Hello World!").Text("How are you today?").OkButton()
+	//_, _ = dialog.Title("Hello World!").
+	//	TextMarkup("How are you <i><b>today</b></i>?").
+	//	InfoIcon().
+	//	OkButton().
+	//	Size(300, 150).
+	//	Show()
+	//
+	//response, _ = dialog.Title("Hello World!").
+	//	Text("How are you today?").
+	//	Extra(getLongText()).
+	//	QuestionIcon().
+	//	YesNoButtons().
+	//	Height(400).
+	//	Show()
+	//
+	//if response == gtk.RESPONSE_YES {
+	//	_, _ = dialog.Title("Your response...").
+	//		Text("...was affirmative!").
+	//		WarningIcon().
+	//		OkButton().
+	//		Width(400).
+	//		Show()
+	//} else {
+	//	_, _ = dialog.Title("Your response...").
+	//		Text("...was very negative!").
+	//		ErrorIcon().
+	//		OkButton().
+	//		Width(400).
+	//		Show()
+	//}
 }
 
 func getLongText() string {

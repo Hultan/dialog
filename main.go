@@ -13,6 +13,7 @@ type Dialog struct {
 	title, text, extra string
 	textMarkup         string
 	width, height      int
+	extraHeight        int
 	icon               iconType
 	buttons            buttonsType
 	path               string
@@ -106,6 +107,12 @@ func (d *Dialog) Height(height int) *Dialog {
 	return d
 }
 
+// ExtraHeight sets the height of the extra field, when it is expanded.
+func (d *Dialog) ExtraHeight(extraHeight int) *Dialog {
+	d.extraHeight = extraHeight
+	return d
+}
+
 // InfoIcon adds an information icon to the dialog
 func (d *Dialog) InfoIcon() *Dialog {
 	d.icon = iconInformation
@@ -173,7 +180,7 @@ func (d *Dialog) Show() (gtk.ResponseType, error) {
 func (d *Dialog) createAndShowDialog() (gtk.ResponseType, error) {
 	dialog, err := d.createDialog()
 	if err != nil {
-		return gtk.RESPONSE_NONE, err
+		return gtk.RESPONSE_REJECT, err
 	}
 
 	return d.showDialog(dialog), err
@@ -217,11 +224,20 @@ func (d *Dialog) createDialog() (*gtk.Dialog, error) {
 	}
 
 	if d.extra != "" {
+		expander, err := gtk.ExpanderNew("Extra information")
+		if err != nil {
+			return nil, err
+		}
+
+		content.PackEnd(expander, true, true, 5)
+
 		scroll, err := gtk.ScrolledWindowNew(nil, nil)
 		if err != nil {
 			return nil, err
 		}
-		content.PackEnd(scroll, true, true, 20)
+		// Height for the expanded content
+		scroll.SetSizeRequest(d.width, d.extraHeight)
+		expander.Add(scroll)
 
 		buffer, err := gtk.TextBufferNew(nil)
 		if err != nil {
@@ -239,6 +255,15 @@ func (d *Dialog) createDialog() (*gtk.Dialog, error) {
 		extraTextView.SetMarginStart(20)
 		extraTextView.SetMarginEnd(20)
 		scroll.Add(extraTextView)
+
+		// Adjust window height dynamically when expanding/collapsing
+		expander.Connect("notify::expanded", func() {
+			if expander.GetExpanded() {
+				dialog.Resize(d.width, d.height+d.extraHeight) // Expand height
+			} else {
+				dialog.Resize(d.width, d.height) // Shrink height
+			}
+		})
 	}
 
 	dialog.SetSizeRequest(d.width, d.height)
