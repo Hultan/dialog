@@ -13,6 +13,14 @@ func main() {
 	// Initialize gtk
 	gtk.Init(&os.Args)
 
+	response, _ := dialog.Title("A custom icon!").
+		Text("This is a custom icon, really?").
+		Extra(getLongText()).
+		CustomIcon("/home/per/code/dialog/examples/assets/armour.png").
+		OkButton().
+		Height(400).
+		Show()
+
 	dialog.Title("Hello World!").OkButton()
 	dialog.Title("Hello World!").Text("How are you today?").OkButton()
 	_, _ = dialog.Title("Hello World!").
@@ -22,7 +30,7 @@ func main() {
 		Size(300, 150).
 		Show()
 
-	response, _ := dialog.Title("Hello World!").
+	response, _ = dialog.Title("Hello World!").
 		Text("How are you today?").
 		Extra(getLongText()).
 		QuestionIcon().

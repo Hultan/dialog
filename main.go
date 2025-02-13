@@ -15,6 +15,7 @@ type Dialog struct {
 	width, height      int
 	icon               iconType
 	buttons            buttonsType
+	path               string
 }
 
 // iconType describes what type of icon the user wants
@@ -26,6 +27,7 @@ const (
 	iconWarning
 	iconQuestion
 	iconError
+	iconCustom
 )
 
 // buttonsType describes the number of different buttons the user wants
@@ -128,6 +130,13 @@ func (d *Dialog) ErrorIcon() *Dialog {
 	return d
 }
 
+// CustomIcon adds a custom icon to the dialog
+func (d *Dialog) CustomIcon(path string) *Dialog {
+	d.icon = iconCustom
+	d.path = path
+	return d
+}
+
 // OkButton adds an ok button to the dialog
 func (d *Dialog) OkButton() *Dialog {
 	d.buttons = buttonsOk
@@ -181,42 +190,28 @@ func (d *Dialog) createDialog() (*gtk.Dialog, error) {
 		return nil, err
 	}
 
-	imageBox, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 10)
+	imageBox, err := d.handleImage()
 	if err != nil {
 		return nil, err
 	}
-
-	imageBox.SetMarginTop(20)
-	imageBox.SetMarginBottom(10)
-	imageBox.SetMarginStart(20)
-	imageBox.SetMarginEnd(20)
 	content.Add(imageBox)
-
-	if d.icon != iconNone {
-		image, err := createImage(d.icon)
-		if err != nil {
-			return nil, err
-		}
-
-		imageBox.Add(image)
-	}
 
 	if d.textMarkup != "" {
 		label, err := gtk.LabelNew("")
-		label.SetMarkup(d.textMarkup)
-		label.SetUseMarkup(true)
-		label.SetLineWrapMode(pango.WRAP_WORD)
 		if err != nil {
 			return nil, err
 		}
+		label.SetMarkup(d.textMarkup)
+		label.SetUseMarkup(true)
+		label.SetLineWrapMode(pango.WRAP_WORD)
 
 		imageBox.Add(label)
 	} else if d.text != "" {
 		label, err := gtk.LabelNew(d.text)
-		label.SetLineWrapMode(pango.WRAP_WORD)
 		if err != nil {
 			return nil, err
 		}
+		label.SetLineWrapMode(pango.WRAP_WORD)
 
 		imageBox.Add(label)
 	}
@@ -235,6 +230,9 @@ func (d *Dialog) createDialog() (*gtk.Dialog, error) {
 
 		buffer.SetText(d.extra)
 		extraTextView, err := gtk.TextViewNewWithBuffer(buffer)
+		if err != nil {
+			return nil, err
+		}
 		extraTextView.SetAcceptsTab(false)
 		extraTextView.SetEditable(false)
 		extraTextView.SetWrapMode(gtk.WRAP_WORD)
@@ -248,12 +246,34 @@ func (d *Dialog) createDialog() (*gtk.Dialog, error) {
 	return dialog, nil
 }
 
-func createImage(icon iconType) (*gtk.Image, error) {
+func (d *Dialog) handleImage() (*gtk.Box, error) {
+	imageBox, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 10)
+	if err != nil {
+		return nil, err
+	}
+
+	imageBox.SetMarginTop(20)
+	imageBox.SetMarginBottom(10)
+	imageBox.SetMarginStart(20)
+	imageBox.SetMarginEnd(20)
+
+	if d.icon != iconNone {
+		image, err := d.createImage()
+		if err != nil {
+			return nil, err
+		}
+
+		imageBox.Add(image)
+	}
+	return imageBox, nil
+}
+
+func (d *Dialog) createImage() (*gtk.Image, error) {
 	var pic *gdk.Pixbuf
 	var img *gtk.Image
 	var err error
 
-	switch icon {
+	switch d.icon {
 	case iconError:
 		pic, err = gdk.PixbufNewFromBytesOnly(errorIcon)
 	case iconInformation:
@@ -262,6 +282,10 @@ func createImage(icon iconType) (*gtk.Image, error) {
 		pic, err = gdk.PixbufNewFromBytesOnly(questionIcon)
 	case iconWarning:
 		pic, err = gdk.PixbufNewFromBytesOnly(warningIcon)
+	case iconCustom:
+		pic, err = gdk.PixbufNewFromFile(d.path)
+	default:
+		return nil, nil
 	}
 	if err != nil {
 		return nil, err
