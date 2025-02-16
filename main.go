@@ -170,6 +170,14 @@ func (d *Dialog) YesNoCancelButtons() *Dialog {
 
 // Show will display the dialog
 func (d *Dialog) Show() (gtk.ResponseType, error) {
+	return d.createAndShowDialog()
+}
+
+//
+// Private methods
+//
+
+func (d *Dialog) createAndShowDialog() (gtk.ResponseType, error) {
 	dialog, err := d.createDialog()
 	if err != nil {
 		return gtk.RESPONSE_REJECT, err
@@ -177,10 +185,6 @@ func (d *Dialog) Show() (gtk.ResponseType, error) {
 
 	return d.showDialog(dialog), err
 }
-
-//
-// Private methods
-//
 
 func (d *Dialog) createDialog() (*gtk.Dialog, error) {
 	dialog, err := gtk.DialogNewWithButtons(d.title, nil, gtk.DIALOG_MODAL, gtkButtons[d.buttons]...)
@@ -193,24 +197,31 @@ func (d *Dialog) createDialog() (*gtk.Dialog, error) {
 		return nil, err
 	}
 
-	imageBox, err := d.getImageBox()
+	imageBox, err := d.handleImage()
 	if err != nil {
 		return nil, err
 	}
 	content.Add(imageBox)
 
-	label, err := gtk.LabelNew("")
-	if err != nil {
-		return nil, err
-	}
 	if d.textMarkup != "" {
+		label, err := gtk.LabelNew("")
+		if err != nil {
+			return nil, err
+		}
 		label.SetMarkup(d.textMarkup)
 		label.SetUseMarkup(true)
+		label.SetLineWrapMode(pango.WRAP_WORD)
+
+		imageBox.Add(label)
 	} else if d.text != "" {
-		label.SetText(d.text)
+		label, err := gtk.LabelNew(d.text)
+		if err != nil {
+			return nil, err
+		}
+		label.SetLineWrapMode(pango.WRAP_WORD)
+
+		imageBox.Add(label)
 	}
-	label.SetLineWrapMode(pango.WRAP_WORD)
-	imageBox.Add(label)
 
 	if d.extra != "" {
 		expander, err := gtk.ExpanderNew("Extra information")
@@ -260,7 +271,7 @@ func (d *Dialog) createDialog() (*gtk.Dialog, error) {
 	return dialog, nil
 }
 
-func (d *Dialog) getImageBox() (*gtk.Box, error) {
+func (d *Dialog) handleImage() (*gtk.Box, error) {
 	imageBox, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 10)
 	if err != nil {
 		return nil, err
@@ -272,18 +283,17 @@ func (d *Dialog) getImageBox() (*gtk.Box, error) {
 	imageBox.SetMarginEnd(20)
 
 	if d.icon != iconNone {
-		image, err := d.loadImage()
+		image, err := d.createImage()
 		if err != nil {
 			return nil, err
 		}
 
 		imageBox.Add(image)
 	}
-
 	return imageBox, nil
 }
 
-func (d *Dialog) loadImage() (*gtk.Image, error) {
+func (d *Dialog) createImage() (*gtk.Image, error) {
 	var pic *gdk.Pixbuf
 	var img *gtk.Image
 	var err error
