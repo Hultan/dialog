@@ -21,39 +21,48 @@ func main() {
 		OkButton().
 		Size(300, 100).
 		Show()
-	//
-	//dialog.Title("Hello World!").OkButton()
-	//dialog.Title("Hello World!").Text("How are you today?").OkButton()
-	//_, _ = dialog.Title("Hello World!").
-	//	TextMarkup("How are you <i><b>today</b></i>?").
-	//	InfoIcon().
-	//	OkButton().
-	//	Size(300, 150).
-	//	Show()
-	//
-	//response, _ = dialog.Title("Hello World!").
-	//	Text("How are you today?").
-	//	Extra(getLongText()).
-	//	QuestionIcon().
-	//	YesNoButtons().
-	//	Height(400).
-	//	Show()
-	//
-	//if response == gtk.RESPONSE_YES {
-	//	_, _ = dialog.Title("Your response...").
-	//		Text("...was affirmative!").
-	//		WarningIcon().
-	//		OkButton().
-	//		Width(400).
-	//		Show()
-	//} else {
-	//	_, _ = dialog.Title("Your response...").
-	//		Text("...was very negative!").
-	//		ErrorIcon().
-	//		OkButton().
-	//		Width(400).
-	//		Show()
-	//}
+
+	dialog.Title("Hello World!").OkButton()
+	dialog.Title("Hello World!").Text("How are you today?").OkButton()
+	_, _ = dialog.Title("Hello World!").
+		TextMarkup("How are you <i><b>today</b></i>?").
+		InfoIcon().
+		OkButton().
+		Size(300, 150).
+		Show()
+
+	response, _ := dialog.Title("No image dialog!").
+		Text("How are you today?").
+		Extra(getLongText()).
+		ExtraHeight(50).
+		OkButton().
+		Height(125).
+		Show()
+
+	response, _ = dialog.Title("Hello World!").
+		Text("How are you today?").
+		Extra(getLongText()).
+		ExtraHeight(50).
+		QuestionIcon().
+		YesNoButtons().
+		Height(175).
+		Show()
+
+	if response == gtk.RESPONSE_YES {
+		_, _ = dialog.Title("Your response...").
+			Text("...was affirmative!").
+			WarningIcon().
+			OkButton().
+			Width(400).
+			Show()
+	} else {
+		_, _ = dialog.Title("Your response...").
+			Text("...was very negative!").
+			ErrorIcon().
+			OkButton().
+			Width(400).
+			Show()
+	}
 }
 
 func getLongText() string {
