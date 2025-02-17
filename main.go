@@ -206,39 +206,12 @@ func (d *Dialog) createDialog() (*gtk.Dialog, error) {
 	imageBox.Add(label)
 
 	if d.extra != "" {
-		expander, err := gtk.ExpanderNew("Extra information")
+		expander, err := d.getExtraExpander()
 		if err != nil {
 			return nil, err
 		}
 
-		content.PackEnd(expander, true, true, 5)
-
-		scroll, err := gtk.ScrolledWindowNew(nil, nil)
-		if err != nil {
-			return nil, err
-		}
-		// Height for the expanded content
-		scroll.SetSizeRequest(d.width, d.extraHeight)
-		expander.Add(scroll)
-
-		buffer, err := gtk.TextBufferNew(nil)
-		if err != nil {
-			return nil, err
-		}
-
-		buffer.SetText(d.extra)
-		extraTextView, err := gtk.TextViewNewWithBuffer(buffer)
-		if err != nil {
-			return nil, err
-		}
-		extraTextView.SetAcceptsTab(false)
-		extraTextView.SetEditable(false)
-		extraTextView.SetWrapMode(gtk.WRAP_WORD)
-		extraTextView.SetMarginStart(20)
-		extraTextView.SetMarginEnd(20)
-		scroll.Add(extraTextView)
-
-		// Adjust window height dynamically when expanding/collapsing
+		// Adjust window height dynamically when expanding/collapsing the expander
 		expander.Connect("notify::expanded", func() {
 			if expander.GetExpanded() {
 				dialog.Resize(d.width, d.height+d.extraHeight) // Expand height
@@ -246,11 +219,48 @@ func (d *Dialog) createDialog() (*gtk.Dialog, error) {
 				dialog.Resize(d.width, d.height) // Shrink height
 			}
 		})
+
+		content.PackEnd(expander, true, true, 5)
 	}
 
 	dialog.SetSizeRequest(d.width, d.height)
 	dialog.ShowAll()
+
 	return dialog, nil
+}
+
+func (d *Dialog) getExtraExpander() (*gtk.Expander, error) {
+	expander, err := gtk.ExpanderNew("Extra information")
+	if err != nil {
+		return nil, err
+	}
+
+	scroll, err := gtk.ScrolledWindowNew(nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	// Height for the expanded content
+	scroll.SetSizeRequest(d.width, d.extraHeight)
+	expander.Add(scroll)
+
+	buffer, err := gtk.TextBufferNew(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	buffer.SetText(d.extra)
+	extraTextView, err := gtk.TextViewNewWithBuffer(buffer)
+	if err != nil {
+		return nil, err
+	}
+	extraTextView.SetAcceptsTab(false)
+	extraTextView.SetEditable(false)
+	extraTextView.SetWrapMode(gtk.WRAP_WORD)
+	extraTextView.SetMarginStart(20)
+	extraTextView.SetMarginEnd(20)
+	scroll.Add(extraTextView)
+
+	return expander, nil
 }
 
 func (d *Dialog) getLabel() (*gtk.Label, error) {
