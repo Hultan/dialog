@@ -2,7 +2,9 @@ package dialog
 
 import (
 	_ "embed"
+	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/gotk3/gotk3/cairo"
 	"github.com/gotk3/gotk3/gdk"
@@ -12,13 +14,15 @@ import (
 
 // Dialog contains information about the dialog the user wants
 type Dialog struct {
-	title, text, extra string
-	textMarkup         string
-	width, height      int
-	extraHeight        int
-	icon               iconType
-	buttons            buttonsType
-	path               string
+	title            string
+	text, textMarkup string
+	headerColor      string
+	width, height    int
+	icon             iconType
+	customIconPath   string
+	buttons          buttonsType
+	extra, extraName string
+	extraHeight      int
 }
 
 // iconType describes what type of icon the user wants
@@ -81,7 +85,7 @@ func Title(title string) *Dialog {
 	colors[iconError] = [4]float64{0.941, 0.259, 0.192, 1.0}
 	colors[iconCustom] = [4]float64{1, 1, 1, 1}
 
-	return &Dialog{title: title, width: 300}
+	return &Dialog{title: title, width: 300, extraName: "Details"}
 }
 
 // Text sets the main text in the dialog.
@@ -96,9 +100,17 @@ func (d *Dialog) TextMarkup(textMarkup string) *Dialog {
 	return d
 }
 
-// Extra sets the extra text that will be displayed in a scrollable text box.
-func (d *Dialog) Extra(extra string) *Dialog {
-	d.extra = extra
+// HeaderColor sets the color of the header. The default value (if
+// HeaderColor is not called) depends on the chosen icon:
+//
+// No icon : Gives a white header
+// InfoIcon : Gives a white header
+// WarningIcon : Gives an orange header
+// ErrorIcon : Gives a red header
+// QuestionIcon : Gives a green header
+// CustomIcon : Gives a White header
+func (d *Dialog) HeaderColor(color string) *Dialog {
+	d.headerColor = color
 	return d
 }
 
@@ -110,6 +122,7 @@ func (d *Dialog) Size(width, height int) *Dialog {
 }
 
 // Width sets the minimum width of the dialog.
+// The default width is 300.
 func (d *Dialog) Width(width int) *Dialog {
 	d.width = width
 	return d
@@ -118,6 +131,19 @@ func (d *Dialog) Width(width int) *Dialog {
 // Height sets the minimum height of the dialog. The dialog will expand if the user expands the extra field (by ExtraHeight pixels).
 func (d *Dialog) Height(height int) *Dialog {
 	d.height = height
+	return d
+}
+
+// Extra sets the extra text that will be displayed in a scrollable text box.
+func (d *Dialog) Extra(extra string) *Dialog {
+	d.extra = extra
+	return d
+}
+
+// ExtraName sets the name of the expander that shows the extra text.
+// The default name is "Details".
+func (d *Dialog) ExtraName(extraName string) *Dialog {
+	d.extraName = extraName
 	return d
 }
 
@@ -154,7 +180,7 @@ func (d *Dialog) ErrorIcon() *Dialog {
 // CustomIcon adds a custom icon to the dialog
 func (d *Dialog) CustomIcon(path string) *Dialog {
 	d.icon = iconCustom
-	d.path = path
+	d.customIconPath = path
 	return d
 }
 
@@ -189,7 +215,9 @@ func (d *Dialog) Show() (gtk.ResponseType, error) {
 		return gtk.RESPONSE_REJECT, err
 	}
 
-	return d.showDialog(dialog), err
+	response := dialog.Run()
+	dialog.Destroy()
+	return response, nil
 }
 
 //
@@ -256,7 +284,7 @@ func (d *Dialog) createDialog() (*gtk.Dialog, error) {
 }
 
 func (d *Dialog) getExtraExpander() (*gtk.Expander, error) {
-	expander, err := gtk.ExpanderNew("Extra information")
+	expander, err := gtk.ExpanderNew(d.extraName)
 	if err != nil {
 		return nil, err
 	}
@@ -336,6 +364,10 @@ func (d *Dialog) renderIconAndBackground(cr *cairo.Context) {
 	var pic *gdk.Pixbuf
 	var col = colors[d.icon]
 
+	if d.headerColor != "" {
+		col = d.getHeaderColor()
+	}
+
 	// Set background color (light blue)
 	cr.SetSourceRGBA(col[0], col[1], col[2], col[3])
 	cr.Rectangle(0, 0, float64(d.width), 50)
@@ -352,7 +384,7 @@ func (d *Dialog) renderIconAndBackground(cr *cairo.Context) {
 		pic, _ = gdk.PixbufNewFromBytesOnly(errorIcon)
 	case iconCustom:
 		// TODO : Cache this image
-		pic, _ = gdk.PixbufNewFromFile(d.path)
+		pic, _ = gdk.PixbufNewFromFile(d.customIconPath)
 	default:
 		return
 	}
@@ -368,10 +400,22 @@ func (d *Dialog) renderIconAndBackground(cr *cairo.Context) {
 	cr.Paint()
 }
 
-func (d *Dialog) showDialog(dialog *gtk.Dialog) gtk.ResponseType {
-	response := dialog.Run()
-	dialog.Destroy()
-	return response
+func (d *Dialog) getHeaderColor() [4]float64 {
+	var color [4]float64
+	if len(d.headerColor) != 9 && len(d.headerColor) != 8 {
+		log.Fatal(fmt.Errorf("invalid color string length: %s", d.headerColor))
+	}
+	if d.headerColor[0] == '#' {
+		d.headerColor = d.headerColor[1:]
+	}
+	for i := 0; i < 4; i++ {
+		hex, err := strconv.ParseUint(d.headerColor[i*2:i*2+2], 16, 8)
+		if err != nil {
+			log.Fatal(fmt.Errorf("invalid color string: %s", d.headerColor))
+		}
+		color[i] = float64(hex) / 255.0
+	}
+	return color
 }
 
 // Apply CSS to GTK widgets
@@ -381,13 +425,18 @@ func applyCSS(css string) error {
 	if err != nil {
 		return err
 	}
-	provider.LoadFromData(css)
+
+	err = provider.LoadFromData(css)
+	if err != nil {
+		return err
+	}
 
 	// Apply CSS to the default screen
 	screen, err := gdk.ScreenGetDefault()
 	if err != nil {
 		return err
 	}
+
 	gtk.AddProviderForScreen(screen, provider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
 	return nil

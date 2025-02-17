@@ -18,12 +18,11 @@ func main() {
 		Extra(getLongText()).
 		ExtraHeight(200).
 		CustomIcon("/home/per/code/dialog/example/assets/armour.png").
+		HeaderColor("#0000FFFF").
 		OkButton().
 		Size(300, 50).
 		Show()
 
-	dialog.Title("Hello World!").OkButton()
-	dialog.Title("Hello World!").Text("How are you today?").OkButton()
 	_, _ = dialog.Title("Hello World!").
 		TextMarkup("<span foreground=\"black\">How are you <i><b>today</b></i>?</span>`5").
 		InfoIcon().
@@ -31,15 +30,16 @@ func main() {
 		Size(300, 100).
 		Show()
 
-	response, _ := dialog.Title("No image dialog!").
+	_, _ = dialog.Title("No image dialog!").
 		Text("How are you today?").
 		Extra(getLongText()).
 		ExtraHeight(50).
+		ExtraName("Extra name test").
 		OkButton().
 		Height(100).
 		Show()
 
-	response, _ = dialog.Title("Hello World!").
+	response, _ := dialog.Title("Hello World!").
 		Text("How are you today?").
 		Extra(getLongText()).
 		ExtraHeight(50).
@@ -53,14 +53,12 @@ func main() {
 			Text("...was affirmative!").
 			WarningIcon().
 			OkButton().
-			Width(400).
 			Show()
 	} else {
 		_, _ = dialog.Title("Your response...").
 			Text("...was very negative!").
 			ErrorIcon().
 			OkButton().
-			Width(400).
 			Show()
 	}
 }
