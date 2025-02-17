@@ -17,7 +17,7 @@ func main() {
 		Text("This is a custom icon, really?").
 		Extra(getLongText()).
 		ExtraHeight(200).
-		CustomIcon("/home/per/code/dialog/example/assets/armour.png").
+		CustomIcon("./example/assets/armour.png").
 		HeaderColor("#6879D0FF").
 		OkButton().
 		Size(300, 50).
