@@ -12,6 +12,8 @@ import (
 	"github.com/gotk3/gotk3/pango"
 )
 
+// TODO : Handle line breaks in text
+
 // Dialog contains information about the dialog the user wants
 type Dialog struct {
 	title            string

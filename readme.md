@@ -72,4 +72,5 @@ if response == gtk.RESPONSE_YES {
 * GoTK3 : https://github.com/gotk3/gotk3
 # TODO
 * Choose between smaller and larger icons. Currently probably only look ok if the icons are 32x32 (PNG).
+* Handle line breaks in text
 
