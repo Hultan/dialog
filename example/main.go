@@ -18,7 +18,7 @@ func main() {
 		Extra(getLongText()).
 		ExtraHeight(200).
 		CustomIcon("/home/per/code/dialog/example/assets/armour.png").
-		HeaderColor("#0000FFFF").
+		HeaderColor("#6879D0FF").
 		OkButton().
 		Size(300, 50).
 		Show()
