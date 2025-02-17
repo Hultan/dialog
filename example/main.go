@@ -25,7 +25,7 @@ func main() {
 	dialog.Title("Hello World!").OkButton()
 	dialog.Title("Hello World!").Text("How are you today?").OkButton()
 	_, _ = dialog.Title("Hello World!").
-		TextMarkup("How are you <i><b>today</b></i>?").
+		TextMarkup("<span foreground=\"black\">How are you <i><b>today</b></i>?</span>`5").
 		InfoIcon().
 		OkButton().
 		Size(300, 100).

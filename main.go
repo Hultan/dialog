@@ -2,7 +2,9 @@ package dialog
 
 import (
 	_ "embed"
+	"log"
 
+	"github.com/gotk3/gotk3/cairo"
 	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
 	"github.com/gotk3/gotk3/pango"
@@ -29,6 +31,10 @@ const (
 	iconQuestion
 	iconError
 	iconCustom
+)
+
+var (
+	colors map[iconType][4]float64
 )
 
 // buttonsType describes the number of different buttons the user wants
@@ -67,6 +73,14 @@ var gtkButtons = map[buttonsType][][]interface{}{
 
 // Title is the starting method (constructor), since every dialog needs a title.
 func Title(title string) *Dialog {
+	colors = make(map[iconType][4]float64, 6)
+	colors[iconNone] = [4]float64{1, 1, 1, 1}
+	colors[iconInformation] = [4]float64{1, 1, 1, 1}
+	colors[iconWarning] = [4]float64{0.941, 0.729, 0.192, 1.0}
+	colors[iconQuestion] = [4]float64{0.118, 0.69, 0.157, 1.0}
+	colors[iconError] = [4]float64{0.941, 0.259, 0.192, 1.0}
+	colors[iconCustom] = [4]float64{1, 1, 1, 1}
+
 	return &Dialog{title: title, width: 300}
 }
 
@@ -200,19 +214,19 @@ func (d *Dialog) createDialog() (*gtk.Dialog, error) {
 	}
 	content.Add(overlay)
 
-	image, err := d.getImage()
+	drawingArea, err := d.getDrawingArea()
 	if err != nil {
 		return nil, err
 	}
 
-	label, err := d.getLabel(image != nil)
+	label, err := d.getLabel(d.icon != iconNone)
 	if err != nil {
 		return nil, err
 	}
 
 	// Add widgets to the overlay
-	if image != nil {
-		overlay.Add(image) // Image is the base layer
+	if drawingArea != nil {
+		overlay.Add(drawingArea) // Image is the base layer
 	}
 	overlay.AddOverlay(label) // Label goes on top
 	overlay.SetSizeRequest(d.width, 50)
@@ -285,6 +299,13 @@ func (d *Dialog) getLabel(hasImage bool) (*gtk.Label, error) {
 		label.SetUseMarkup(true)
 	} else if d.text != "" {
 		label.SetText(d.text)
+		label.SetName("headerLabel") // Set a name for CSS targeting
+
+		// Apply CSS styling
+		err := applyCSS(`#headerLabel { color: black; }`)
+		if err != nil {
+			log.Fatal("Failed to apply CSS:", err)
+		}
 	}
 	if hasImage {
 		label.SetMarginStart(45)
@@ -297,42 +318,77 @@ func (d *Dialog) getLabel(hasImage bool) (*gtk.Label, error) {
 	return label, nil
 }
 
-func (d *Dialog) getImage() (*gtk.Image, error) {
+func (d *Dialog) getDrawingArea() (*gtk.DrawingArea, error) {
+	// Create a DrawingArea
+	drawingArea, _ := gtk.DrawingAreaNew()
+	drawingArea.SetSizeRequest(d.width, 50) // Set control size
+
+	// Connect the "draw" signal to render content
+	drawingArea.Connect("draw", func(da *gtk.DrawingArea, cr *cairo.Context) {
+		d.renderIconAndBackground(cr)
+	})
+
+	return drawingArea, nil
+}
+
+// renderIconAndBackground renders a background + PNG icon
+func (d *Dialog) renderIconAndBackground(cr *cairo.Context) {
 	var pic *gdk.Pixbuf
-	var img *gtk.Image
-	var err error
+	var col = colors[d.icon]
+
+	// Set background color (light blue)
+	cr.SetSourceRGBA(col[0], col[1], col[2], col[3])
+	cr.Rectangle(0, 0, float64(d.width), 50)
+	cr.Fill()
 
 	switch d.icon {
-	case iconError:
-		pic, err = gdk.PixbufNewFromBytesOnly(errorIcon)
 	case iconInformation:
-		pic, err = gdk.PixbufNewFromBytesOnly(infoIcon)
-	case iconQuestion:
-		pic, err = gdk.PixbufNewFromBytesOnly(questionIcon)
+		pic, _ = gdk.PixbufNewFromBytesOnly(infoIcon)
 	case iconWarning:
-		pic, err = gdk.PixbufNewFromBytesOnly(warningIcon)
+		pic, _ = gdk.PixbufNewFromBytesOnly(warningIcon)
+	case iconQuestion:
+		pic, _ = gdk.PixbufNewFromBytesOnly(questionIcon)
+	case iconError:
+		pic, _ = gdk.PixbufNewFromBytesOnly(errorIcon)
 	case iconCustom:
-		pic, err = gdk.PixbufNewFromFile(d.path)
+		// TODO : Cache this image
+		pic, _ = gdk.PixbufNewFromFile(d.path)
 	default:
-		return nil, nil
+		return
 	}
-	if err != nil {
-		return nil, err
-	}
-	img, err = gtk.ImageNewFromPixbuf(pic)
-	if err != nil {
-		return nil, err
-	}
-	img.SetHAlign(gtk.ALIGN_START)
-	img.SetMarginStart(5)
-	img.SetMarginTop(5)
-	img.SetMarginBottom(5)
 
-	return img, err
+	// Render Pixbuf onto Cairo surface
+	surface, _ := gdk.CairoSurfaceCreateFromPixbuf(pic, 0, nil)
+	if surface == nil {
+		log.Fatal("Failed to convert Pixbuf to Cairo surface")
+	}
+
+	// Draw image at position (9, 9)
+	cr.SetSourceSurface(surface, 9, 9)
+	cr.Paint()
 }
 
 func (d *Dialog) showDialog(dialog *gtk.Dialog) gtk.ResponseType {
 	response := dialog.Run()
 	dialog.Destroy()
 	return response
+}
+
+// Apply CSS to GTK widgets
+func applyCSS(css string) error {
+	// Create a CSS provider
+	provider, err := gtk.CssProviderNew()
+	if err != nil {
+		return err
+	}
+	provider.LoadFromData(css)
+
+	// Apply CSS to the default screen
+	screen, err := gdk.ScreenGetDefault()
+	if err != nil {
+		return err
+	}
+	gtk.AddProviderForScreen(screen, provider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+	return nil
 }
