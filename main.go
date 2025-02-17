@@ -193,17 +193,29 @@ func (d *Dialog) createDialog() (*gtk.Dialog, error) {
 		return nil, err
 	}
 
-	imageBox, err := d.getImageBox()
+	// Create an Overlay (for stacking widgets)
+	overlay, err := gtk.OverlayNew()
 	if err != nil {
 		return nil, err
 	}
-	content.Add(imageBox)
+	content.Add(overlay)
 
-	label, err := d.getLabel()
+	image, err := d.getImage()
 	if err != nil {
 		return nil, err
 	}
-	imageBox.Add(label)
+
+	label, err := d.getLabel(image != nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// Add widgets to the overlay
+	if image != nil {
+		overlay.Add(image) // Image is the base layer
+	}
+	overlay.AddOverlay(label) // Label goes on top
+	overlay.SetSizeRequest(d.width, 50)
 
 	if d.extra != "" {
 		expander, err := d.getExtraExpander()
@@ -263,7 +275,7 @@ func (d *Dialog) getExtraExpander() (*gtk.Expander, error) {
 	return expander, nil
 }
 
-func (d *Dialog) getLabel() (*gtk.Label, error) {
+func (d *Dialog) getLabel(hasImage bool) (*gtk.Label, error) {
 	label, err := gtk.LabelNew("")
 	if err != nil {
 		return nil, err
@@ -274,33 +286,18 @@ func (d *Dialog) getLabel() (*gtk.Label, error) {
 	} else if d.text != "" {
 		label.SetText(d.text)
 	}
+	if hasImage {
+		label.SetMarginStart(45)
+	} else {
+		label.SetMarginStart(10)
+	}
 	label.SetLineWrapMode(pango.WRAP_WORD)
+	label.SetHAlign(gtk.ALIGN_START)
+	label.SetVExpand(true)
 	return label, nil
 }
 
-func (d *Dialog) getImageBox() (*gtk.Box, error) {
-	imageBox, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 10)
-	if err != nil {
-		return nil, err
-	}
-
-	imageBox.SetMarginTop(20)
-	imageBox.SetMarginBottom(10)
-	imageBox.SetMarginStart(20)
-	imageBox.SetMarginEnd(20)
-
-	if d.icon != iconNone {
-		image, err := d.loadImage()
-		if err != nil {
-			return nil, err
-		}
-
-		imageBox.Add(image)
-	}
-	return imageBox, nil
-}
-
-func (d *Dialog) loadImage() (*gtk.Image, error) {
+func (d *Dialog) getImage() (*gtk.Image, error) {
 	var pic *gdk.Pixbuf
 	var img *gtk.Image
 	var err error
@@ -326,6 +323,11 @@ func (d *Dialog) loadImage() (*gtk.Image, error) {
 	if err != nil {
 		return nil, err
 	}
+	img.SetHAlign(gtk.ALIGN_START)
+	img.SetMarginStart(5)
+	img.SetMarginTop(5)
+	img.SetMarginBottom(5)
+
 	return img, err
 }
 

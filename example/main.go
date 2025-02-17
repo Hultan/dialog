@@ -19,7 +19,7 @@ func main() {
 		ExtraHeight(200).
 		CustomIcon("/home/per/code/dialog/example/assets/armour.png").
 		OkButton().
-		Size(300, 100).
+		Size(300, 50).
 		Show()
 
 	dialog.Title("Hello World!").OkButton()
@@ -28,7 +28,7 @@ func main() {
 		TextMarkup("How are you <i><b>today</b></i>?").
 		InfoIcon().
 		OkButton().
-		Size(300, 150).
+		Size(300, 100).
 		Show()
 
 	response, _ := dialog.Title("No image dialog!").
@@ -36,7 +36,7 @@ func main() {
 		Extra(getLongText()).
 		ExtraHeight(50).
 		OkButton().
-		Height(125).
+		Height(100).
 		Show()
 
 	response, _ = dialog.Title("Hello World!").
@@ -45,7 +45,7 @@ func main() {
 		ExtraHeight(50).
 		QuestionIcon().
 		YesNoButtons().
-		Height(175).
+		Height(125).
 		Show()
 
 	if response == gtk.RESPONSE_YES {
