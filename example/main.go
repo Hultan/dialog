@@ -14,7 +14,7 @@ func main() {
 	gtk.Init(&os.Args)
 
 	_, _ = dialog.Title("A custom icon!").
-		Text("This is a custom icon, really?").
+		Text("This is a custom icon, really? This is a really long text that needs a linebreak.").
 		Extra(getLongText()).
 		ExtraHeight(200).
 		CustomIcon("./example/assets/armour.png").

@@ -25,6 +25,7 @@ type Dialog struct {
 	buttons          buttonsType
 	extra, extraName string
 	extraHeight      int
+	extraExpand      bool
 }
 
 // iconType describes what type of icon the user wants
@@ -139,6 +140,13 @@ func (d *Dialog) Height(height int) *Dialog {
 // Extra sets the extra text that will be displayed in a scrollable text box.
 func (d *Dialog) Extra(extra string) *Dialog {
 	d.extra = extra
+	return d
+}
+
+// ExtraExpand sets the extra text that will be displayed in a scrollable text box and expands it.
+func (d *Dialog) ExtraExpand(extra string) *Dialog {
+	d.extra = extra
+	d.extraExpand = true
 	return d
 }
 
@@ -267,6 +275,10 @@ func (d *Dialog) createDialog() (*gtk.Dialog, error) {
 			return nil, err
 		}
 
+		if d.extraExpand {
+			expander.SetExpanded(true)
+		}
+
 		// Adjust window height dynamically when expanding/collapsing the expander
 		expander.Connect("notify::expanded", func() {
 			if expander.GetExpanded() {
@@ -342,9 +354,12 @@ func (d *Dialog) getLabel(hasImage bool) (*gtk.Label, error) {
 	} else {
 		label.SetMarginStart(10)
 	}
+	//label.SetMarginTop(0)
 	label.SetLineWrapMode(pango.WRAP_WORD)
+	//label.SetLineWrap(true)
 	label.SetHAlign(gtk.ALIGN_START)
 	label.SetVExpand(true)
+
 	return label, nil
 }
 
