@@ -26,6 +26,8 @@ type Dialog struct {
 	extra, extraName string
 	extraHeight      int
 	extraExpand      bool
+
+	dialog *gtk.Dialog
 }
 
 // iconType describes what type of icon the user wants
@@ -239,6 +241,7 @@ func (d *Dialog) createDialog() (*gtk.Dialog, error) {
 	if err != nil {
 		return nil, err
 	}
+	d.dialog = dialog
 
 	content, err := dialog.GetContentArea()
 	if err != nil {
@@ -302,6 +305,8 @@ func (d *Dialog) getExtraExpander() (*gtk.Expander, error) {
 	if err != nil {
 		return nil, err
 	}
+	expander.SetVExpand(true)
+	expander.SetHExpand(true)
 
 	scroll, err := gtk.ScrolledWindowNew(nil, nil)
 	if err != nil {
@@ -326,6 +331,8 @@ func (d *Dialog) getExtraExpander() (*gtk.Expander, error) {
 	extraTextView.SetWrapMode(gtk.WRAP_WORD)
 	extraTextView.SetMarginStart(20)
 	extraTextView.SetMarginEnd(20)
+	extraTextView.SetHExpand(true)
+	extraTextView.SetVExpand(true)
 	scroll.Add(extraTextView)
 
 	return expander, nil
@@ -354,11 +361,9 @@ func (d *Dialog) getLabel(hasImage bool) (*gtk.Label, error) {
 	} else {
 		label.SetMarginStart(10)
 	}
-	//label.SetMarginTop(0)
 	label.SetLineWrapMode(pango.WRAP_WORD)
-	//label.SetLineWrap(true)
 	label.SetHAlign(gtk.ALIGN_START)
-	label.SetVExpand(true)
+	label.SetVExpand(false)
 
 	return label, nil
 }
@@ -367,6 +372,7 @@ func (d *Dialog) getDrawingArea() (*gtk.DrawingArea, error) {
 	// Create a DrawingArea
 	drawingArea, _ := gtk.DrawingAreaNew()
 	drawingArea.SetSizeRequest(d.width, 50) // Set control size
+	drawingArea.SetHExpand(true)
 
 	// Connect the "draw" signal to render content
 	drawingArea.Connect("draw", func(da *gtk.DrawingArea, cr *cairo.Context) {
@@ -386,8 +392,9 @@ func (d *Dialog) renderIconAndBackground(cr *cairo.Context) {
 	}
 
 	// Set background color (light blue)
+	width, _ := d.dialog.GetSize()
 	cr.SetSourceRGBA(col[0], col[1], col[2], col[3])
-	cr.Rectangle(0, 0, float64(d.width), 50)
+	cr.Rectangle(0, 0, float64(width), 50)
 	cr.Fill()
 
 	switch d.icon {
