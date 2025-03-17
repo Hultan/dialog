@@ -12,8 +12,6 @@ import (
 	"github.com/gotk3/gotk3/pango"
 )
 
-// TODO : Handle line breaks in text
-
 // Dialog contains information about the dialog the user wants
 type Dialog struct {
 	title            string
@@ -356,14 +354,20 @@ func (d *Dialog) getLabel(hasImage bool) (*gtk.Label, error) {
 			log.Fatal("Failed to apply CSS:", err)
 		}
 	}
+
+	// Set margins AFTER SetHExpand and SetVExpand
+	label.SetHAlign(gtk.ALIGN_START)
+	label.SetVAlign(gtk.ALIGN_CENTER)
+	label.SetHExpand(true)
+	label.SetVExpand(false)
+	label.SetLineWrap(true)
+	label.SetLineWrapMode(pango.WRAP_WORD_CHAR)
+
 	if hasImage {
 		label.SetMarginStart(45)
 	} else {
 		label.SetMarginStart(10)
 	}
-	label.SetLineWrapMode(pango.WRAP_WORD)
-	label.SetHAlign(gtk.ALIGN_START)
-	label.SetVExpand(false)
 
 	return label, nil
 }
