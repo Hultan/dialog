@@ -13,8 +13,8 @@ func main() {
 	// Initialize gtk
 	gtk.Init(&os.Args)
 
-	_, _ = dialog.Title("A custom icon!").
-		Text("This is a custom icon, really? This is a really long text that needs a linebreak.").
+	_, _ = dialog.Title("%d custom icons!", 10).
+		Text("This is a custom icon, really? This is a really long text that needs %d line breaks.", 5).
 		ExtraExpand(getLongText()).
 		ExtraHeight(200).
 		CustomIcon("./example/assets/armour.png").
@@ -24,7 +24,7 @@ func main() {
 		Show()
 
 	_, _ = dialog.Title("Hello World!").
-		TextMarkup("<span foreground=\"black\">How are you <i><b>today</b></i>?</span>`5").
+		TextMarkup("<span foreground=\"black\">How are you on this <i><b>%s</b></i>?</span>", "Tuesday").
 		InfoIcon().
 		OkButton().
 		Size(300, 100).

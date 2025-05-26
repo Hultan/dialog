@@ -12,8 +12,6 @@ import (
 	"github.com/gotk3/gotk3/pango"
 )
 
-// TODO : Add formatting to Title() and Text() and other functions. See fmt.Sprintf() for example.
-
 // Dialog contains information about the dialog the user wants
 type Dialog struct {
 	title            string
@@ -81,7 +79,8 @@ var gtkButtons = map[buttonsType][][]interface{}{
 //
 
 // Title is the starting method (constructor), since every dialog needs a title.
-func Title(title string) *Dialog {
+func Title(format string, a ...any) *Dialog {
+	title := fmt.Sprintf(format, a...)
 	colors = make(map[iconType][4]float64, 6)
 	colors[iconNone] = [4]float64{1, 1, 1, 1}
 	colors[iconInformation] = [4]float64{1, 1, 1, 1}
@@ -94,13 +93,15 @@ func Title(title string) *Dialog {
 }
 
 // Text sets the main text in the dialog.
-func (d *Dialog) Text(text string) *Dialog {
+func (d *Dialog) Text(format string, a ...any) *Dialog {
+	text := fmt.Sprintf(format, a...)
 	d.text = text
 	return d
 }
 
 // TextMarkup sets the main text in the dialog in the GTK markup format.
-func (d *Dialog) TextMarkup(textMarkup string) *Dialog {
+func (d *Dialog) TextMarkup(format string, a ...any) *Dialog {
+	textMarkup := fmt.Sprintf(format, a...)
 	d.textMarkup = textMarkup
 	return d
 }
@@ -108,12 +109,12 @@ func (d *Dialog) TextMarkup(textMarkup string) *Dialog {
 // HeaderColor sets the color of the header. The default value (if
 // HeaderColor is not called) depends on the chosen icon:
 //
-// No icon : Gives a white header
-// InfoIcon : Gives a white header
-// WarningIcon : Gives an orange header
-// ErrorIcon : Gives a red header
-// QuestionIcon : Gives a green header
-// CustomIcon : Gives a White header
+// No icon: Gives a white header
+// InfoIcon: Gives a white header
+// WarningIcon: Gives an orange header
+// ErrorIcon: Gives a red header
+// QuestionIcon: Gives a green header
+// CustomIcon: Gives a White header
 func (d *Dialog) HeaderColor(color string) *Dialog {
 	d.headerColor = color
 	return d
@@ -140,13 +141,15 @@ func (d *Dialog) Height(height int) *Dialog {
 }
 
 // Extra sets the extra text that will be displayed in a scrollable text box.
-func (d *Dialog) Extra(extra string) *Dialog {
+func (d *Dialog) Extra(format string, a ...any) *Dialog {
+	extra := fmt.Sprintf(format, a...)
 	d.extra = extra
 	return d
 }
 
 // ExtraExpand sets the extra text that will be displayed in a scrollable text box and expands it.
-func (d *Dialog) ExtraExpand(extra string) *Dialog {
+func (d *Dialog) ExtraExpand(format string, a ...any) *Dialog {
+	extra := fmt.Sprintf(format, a...)
 	d.extra = extra
 	d.extraExpand = true
 	return d
