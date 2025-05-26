@@ -12,6 +12,8 @@ import (
 	"github.com/gotk3/gotk3/pango"
 )
 
+// TODO : Add formatting to Title() and Text() and other functions. See fmt.Sprintf() for example.
+
 // Dialog contains information about the dialog the user wants
 type Dialog struct {
 	title            string
