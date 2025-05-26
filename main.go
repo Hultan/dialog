@@ -80,7 +80,6 @@ var gtkButtons = map[buttonsType][][]interface{}{
 
 // Title is the starting method (constructor), since every dialog needs a title.
 func Title(format string, a ...any) *Dialog {
-	title := fmt.Sprintf(format, a...)
 	colors = make(map[iconType][4]float64, 6)
 	colors[iconNone] = [4]float64{1, 1, 1, 1}
 	colors[iconInformation] = [4]float64{1, 1, 1, 1}
@@ -89,20 +88,18 @@ func Title(format string, a ...any) *Dialog {
 	colors[iconError] = [4]float64{0.941, 0.259, 0.192, 1.0}
 	colors[iconCustom] = [4]float64{1, 1, 1, 1}
 
-	return &Dialog{title: title, width: 300, extraName: "Details"}
+	return &Dialog{title: fmt.Sprintf(format, a...), width: 300, extraName: "Details"}
 }
 
 // Text sets the main text in the dialog.
 func (d *Dialog) Text(format string, a ...any) *Dialog {
-	text := fmt.Sprintf(format, a...)
-	d.text = text
+	d.text = fmt.Sprintf(format, a...)
 	return d
 }
 
 // TextMarkup sets the main text in the dialog in the GTK markup format.
 func (d *Dialog) TextMarkup(format string, a ...any) *Dialog {
-	textMarkup := fmt.Sprintf(format, a...)
-	d.textMarkup = textMarkup
+	d.textMarkup = fmt.Sprintf(format, a...)
 	return d
 }
 
@@ -142,15 +139,13 @@ func (d *Dialog) Height(height int) *Dialog {
 
 // Extra sets the extra text that will be displayed in a scrollable text box.
 func (d *Dialog) Extra(format string, a ...any) *Dialog {
-	extra := fmt.Sprintf(format, a...)
-	d.extra = extra
+	d.extra = fmt.Sprintf(format, a...)
 	return d
 }
 
 // ExtraExpand sets the extra text that will be displayed in a scrollable text box and expands it.
 func (d *Dialog) ExtraExpand(format string, a ...any) *Dialog {
-	extra := fmt.Sprintf(format, a...)
-	d.extra = extra
+	d.extra = fmt.Sprintf(format, a...)
 	d.extraExpand = true
 	return d
 }
@@ -162,7 +157,7 @@ func (d *Dialog) ExtraName(extraName string) *Dialog {
 	return d
 }
 
-// ExtraHeight sets the height of the extra field, when it is expanded.
+// ExtraHeight sets the height of the extra field when it is expanded.
 func (d *Dialog) ExtraHeight(extraHeight int) *Dialog {
 	d.extraHeight = extraHeight
 	return d
@@ -400,7 +395,7 @@ func (d *Dialog) renderIconAndBackground(cr *cairo.Context) {
 		col = d.getHeaderColor()
 	}
 
-	// Set background color (light blue)
+	// Set the background color (light blue)
 	width, _ := d.dialog.GetSize()
 	cr.SetSourceRGBA(col[0], col[1], col[2], col[3])
 	cr.Rectangle(0, 0, float64(width), 50)
