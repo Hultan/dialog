@@ -81,7 +81,11 @@ var gtkButtons = map[buttonsType][][]interface{}{
 // Title is the starting method (constructor), since every dialog needs a title.
 // To avoid getting the error: non-constant format string in call to (*github.com/hultan/dialog.Dialog).Text
 // from go vet, the first argument is named message instead of format.
-func Title(message string, a ...any) *Dialog {
+func Title(message string) *Dialog {
+	return Titlef(message)
+}
+
+func Titlef(message string, a ...any) *Dialog {
 	colors = make(map[iconType][4]float64, 6)
 	colors[iconNone] = [4]float64{1, 1, 1, 1}
 	colors[iconInformation] = [4]float64{1, 1, 1, 1}
@@ -96,8 +100,11 @@ func Title(message string, a ...any) *Dialog {
 // Text sets the main text in the dialog.
 // To avoid getting the error: non-constant format string in call to (*github.com/hultan/dialog.Dialog).Text
 // from go vet, the first argument is named message instead of format.
+func (d *Dialog) Text(message string) *Dialog {
+	return d.Textf(message)
+}
 
-func (d *Dialog) Text(message string, a ...any) *Dialog {
+func (d *Dialog) Textf(message string, a ...any) *Dialog {
 	d.text = fmt.Sprintf(message, a...)
 	return d
 }
@@ -105,7 +112,11 @@ func (d *Dialog) Text(message string, a ...any) *Dialog {
 // TextMarkup sets the main text in the dialog in the GTK markup format.
 // To avoid getting the error: non-constant format string in call to (*github.com/hultan/dialog.Dialog).Text
 // from go vet, the first argument is named message instead of format.
-func (d *Dialog) TextMarkup(message string, a ...any) *Dialog {
+func (d *Dialog) TextMarkup(message string) *Dialog {
+	return d.TextMarkupf(message)
+}
+
+func (d *Dialog) TextMarkupf(message string, a ...any) *Dialog {
 	d.textMarkup = fmt.Sprintf(message, a...)
 	return d
 }
@@ -147,7 +158,11 @@ func (d *Dialog) Height(height int) *Dialog {
 // Extra sets the extra text that will be displayed in a scrollable text box.
 // To avoid getting the error: non-constant format string in call to (*github.com/hultan/dialog.Dialog).Text
 // from go vet, the first argument is named message instead of format.
-func (d *Dialog) Extra(message string, a ...any) *Dialog {
+func (d *Dialog) Extra(message string) *Dialog {
+	return d.Extraf(message)
+}
+
+func (d *Dialog) Extraf(message string, a ...any) *Dialog {
 	d.extra = fmt.Sprintf(message, a...)
 	return d
 }
@@ -155,7 +170,12 @@ func (d *Dialog) Extra(message string, a ...any) *Dialog {
 // ExtraExpand sets the extra text that will be displayed in a scrollable text box and expands it.
 // To avoid getting the error: non-constant format string in call to (*github.com/hultan/dialog.Dialog).Text
 // from go vet, the first argument is named message instead of format.
-func (d *Dialog) ExtraExpand(message string, a ...any) *Dialog {
+func (d *Dialog) ExtraExpand(message string) *Dialog {
+	d.extraExpand = true
+	return d.ExtraExpandf(message)
+}
+
+func (d *Dialog) ExtraExpandf(message string, a ...any) *Dialog {
 	d.extra = fmt.Sprintf(message, a...)
 	d.extraExpand = true
 	return d
